@@ -33,8 +33,19 @@ public class ObjectId {
 
     public static ObjectId fromString(byte[] sha1) {
         // 把sha1转为字符串
-        String str = new String(sha1);
-        return fromString(str);
+        return fromString(bytesToHex(sha1));
+    }
+
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder(2 * bytes.length);
+        for (byte b : bytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 
     @Override

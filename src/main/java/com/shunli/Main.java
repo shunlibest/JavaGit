@@ -1,6 +1,9 @@
 package com.shunli;
 
 import com.shunli.objects.CommitObject;
+import com.shunli.objects.TreeObject;
+
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -11,7 +14,18 @@ public class Main {
 
         commitObject.parse();
 
-        System.out.println(commitObject.getTreeId());
-        System.out.println(commitObject.getAuthor());
+//        System.out.println(commitObject.getTreeId());
+//        System.out.println(commitObject.getAuthor());
+//        System.out.println(commitObject.getParentIds());
+//
+
+        TreeObject treeObject = TreeObject.parse(commitObject.getTreeId().toString());
+        treeObject.parse();
+
+        List<TreeObject> children = treeObject.getChildren();
+
+        for (TreeObject child : children) {
+            System.out.println(child.toString());
+        }
     }
 }
