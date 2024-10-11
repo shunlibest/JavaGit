@@ -2,6 +2,7 @@ package com.shunli.objects;
 
 
 import com.shunli.Repository;
+import com.shunli.utils.FileUtils;
 import com.shunli.utils.RawParseUtils;
 
 import java.io.File;
@@ -19,48 +20,59 @@ public class TreeObject extends BaseObject {
 
     private final String fileMode;
     private final String fileName;
+    private final String filePath;
 
     private final ObjectId objectId;
-    private final List<TreeObject> children = new ArrayList<>();
+    // tree对象, 引用的可能是子文件夹(tree对象)或者文件(blob对象)
+    private final List<BaseObject> children = new ArrayList<>();
 
     protected TreeObject(ObjectId objectId, String fileMode, String fileName) {
         super(objectId);
         this.fileMode = fileMode;
         this.fileName = fileName;
         this.objectId = objectId;
+        this.filePath = fileName;
     }
 
-    public static TreeObject parse(String commitId) {
+    public static TreeObject getRootTreeObject(String commitId) {
         // 对于commit对象引用的第一个tree对象, 这个引用不包含名称（name）和模式（mode）,代表了工作区的根目录
-        TreeObject commitObject = new TreeObject(ObjectId.fromString(commitId), "", "/");
-        parse(commitObject);
-        return commitObject;
+        return new TreeObject(ObjectId.fromString(commitId), "", "/");
     }
 
-    private static void parse(TreeObject object) {
+    private void readObjectFile() {
         File directory = Repository.getInstance().getDirectory();
-        object.buffer = ObjectFileReader.readObjectFile(directory.getAbsolutePath(), object.id);
+        buffer = ObjectFileReader.readObjectFile(directory.getAbsolutePath(), id);
     }
 
     /**
      * 解析tree对象
      */
-    public void parse() {
+    @Override
+    public void parse(boolean writeToFile, String writeFilePath) {
+        if (writeToFile) {
+            FileUtils.createFolder(writeFilePath);
+        }
+        readObjectFile();
         byte[] data = buffer;
+
+        if (data == null) {
+            return;
+        }
+
         int index = 0;
 
         // 跳过tree对象开头的: tree+size 部分
-        index = findNextZeroByte(data, index);
+        index = RawParseUtils.findNextZeroByte(data, index);
 
         while (index < data.length - 1) {
             // 解析文件模式
             int modeStart = index + 1;
-            int modeEnd = findNextSpaceByte(data, modeStart);
+            int modeEnd = RawParseUtils.findNextSpaceByte(data, modeStart);
             String mode = new String(data, modeStart, modeEnd - modeStart);
 
             // 解析文件名
             int nameStart = modeEnd + 1;
-            int nameEnd = findNextZeroByte(data, nameStart);
+            int nameEnd = RawParseUtils.findNextZeroByte(data, nameStart);
             String name = new String(data, nameStart, nameEnd - nameStart);
 
             // 解析 SHA-1 值
@@ -69,35 +81,32 @@ public class TreeObject extends BaseObject {
             ObjectId sha1Id = ObjectId.fromString(sha1Bytes);
             index = nameEnd + 20;  // Skip SHA-1 bytes
 
-            TreeObject childObject = new TreeObject(sha1Id, mode, name);
+            BaseObject childObject = generateObject(sha1Id, mode, name);
+            childObject.parse(writeToFile, new File(writeFilePath, name).getAbsolutePath());
             children.add(childObject);
         }
     }
 
+    private BaseObject generateObject(ObjectId objectId, String fileMode, String fileName) {
 
-    private static int findNextSpaceByte(byte[] data, int startIndex) {
-        return findNextByte(data, startIndex, (byte) ' ');
-    }
-
-    private static int findNextZeroByte(byte[] data, int startIndex) {
-        return findNextByte(data, startIndex, (byte) 0);
-    }
-
-    private static int findNextByte(byte[] data, int startIndex, byte b) {
-        for (int i = startIndex; i < data.length; i++) {
-            if (data[i] == b) {
-                return i;
-            }
+        if (fileMode.equals("40000")) {
+            return new TreeObject(objectId, fileMode, fileName);
+        } else {
+            return new BlobObject(objectId, fileMode, fileName);
         }
-        return -1;
     }
 
-    public List<TreeObject> getChildren() {
+    public List<BaseObject> getChildren() {
         return children;
     }
 
     @Override
     public String toString() {
         return fileMode + " " + fileName + " " + objectId;
+    }
+
+    @Override
+    public String getName() {
+        return fileName;
     }
 }

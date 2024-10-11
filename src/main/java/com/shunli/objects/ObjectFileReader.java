@@ -42,8 +42,9 @@ public class ObjectFileReader {
             fileInputStream.close();
             return buffer.toByteArray();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+//            throw new RuntimeException(path.toString(), e);
         }
+        return null;
     }
 
     public static void writeToFile(byte[] data, String filePath) throws IOException {
@@ -66,8 +67,8 @@ public class ObjectFileReader {
         try {
             // 设置Git仓库路径和对象哈希
             String GIT_DIR = "/Users/shunlihan/Documents/codeAli/vins-mobile/.git";
-            String commitHash = "0c57913b0bdd1d8a7f06bb0c3790b07df73b91ef"; // 例如 "a1b2c3d4e5..."
-            String outputFilePath = "/Users/shunlihan/Downloads/tree.txt";
+            String commitHash = "be324984fdd09c1ff657712e9e350bf4edeb96b9"; // 例如 "a1b2c3d4e5..."
+            String outputFilePath = "/Users/shunlihan/Downloads/blob.txt";
 
             // 读取并解压对象数据
             byte[] data = readObjectFile(GIT_DIR, ObjectId.fromString(commitHash));

@@ -5,7 +5,7 @@ package com.shunli.objects;
  * @author shunli
  * 基础Object对象, 有4种类型: blob、commit、tag 和 tree
  */
-abstract class BaseObject {
+public abstract class BaseObject {
 
     protected ObjectId id;
 
@@ -13,4 +13,10 @@ abstract class BaseObject {
     public BaseObject(ObjectId id) {
         this.id = id;
     }
+
+    public String getName() {
+        return "";
+    }
+
+    public abstract void parse(boolean writeToFile, String writeFilePath);
 }

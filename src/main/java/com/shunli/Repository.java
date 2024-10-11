@@ -11,9 +11,10 @@ public class Repository {
     private final File gitDir;
     // 单例
     private static Repository instance;
+
     public static Repository getInstance() {
         if (instance == null) {
-            instance = new Repository("/Users/shunlihan/Documents/codeAli/vins-mobile/.git");
+            instance = new Repository("/Users/shunlihan/Documents/codeAli/GXDTaoJin_Android/.git");
         }
         return instance;
     }
@@ -25,6 +26,10 @@ public class Repository {
 
     public File getDirectory() {
         return gitDir;
+    }
+
+    public File getWorkSpaceDir() {
+        return new File("/Users/shunlihan/Downloads/workspace");
     }
 
 }

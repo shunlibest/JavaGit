@@ -145,6 +145,24 @@ public class RawParseUtils {
     }
 
 
+    public static int findNextSpaceByte(byte[] data, int startIndex) {
+        return findNextByte(data, startIndex, (byte) ' ');
+    }
+
+    public static int findNextZeroByte(byte[] data, int startIndex) {
+        return findNextByte(data, startIndex, (byte) 0);
+    }
+
+    private static int findNextByte(byte[] data, int startIndex, byte b) {
+        for (int i = startIndex; i < data.length; i++) {
+            if (data[i] == b) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+
     public static final class MutableInteger {
         public int value;
     }

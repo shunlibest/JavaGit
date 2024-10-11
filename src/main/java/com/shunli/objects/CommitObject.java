@@ -44,7 +44,8 @@ public class CommitObject extends BaseObject {
      * <p>
      * 在git中会以类似于词法分析的方式, 一个byte一个byte的解析提交消息
      */
-    public void parse() {
+    @Override
+    public void parse(boolean writeToFile, String writeFilePath) {
         byte[] raw = buffer;
         String content = new String(raw);
         String[] lines = content.split("\n");
